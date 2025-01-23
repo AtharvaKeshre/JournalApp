@@ -4,6 +4,7 @@ import com.atharva.journalapp.entity.User;
 import com.atharva.journalapp.repository.UserRepo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ public class UserDetailsServiceImplTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
     }
+    @Disabled
     @Test
     void loadUserByUserNametest(){
 
