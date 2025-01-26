@@ -1,10 +1,12 @@
 package com.atharva.journalapp.controller;
 
+import com.atharva.journalapp.api.response.WeatherResponse;
 import com.atharva.journalapp.entity.JournalEntry;
 import com.atharva.journalapp.entity.User;
 import com.atharva.journalapp.repository.UserRepo;
 import com.atharva.journalapp.service.JournalEntryService;
 import com.atharva.journalapp.service.UserService;
+import com.atharva.journalapp.service.WeatherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,9 @@ public class UserController {
 
     @Autowired
     private UserRepo userRepo;
+
+    @Autowired
+    private WeatherService weatherService;
 
     @Autowired
     private JournalEntryService journalEntryService;
@@ -69,6 +74,15 @@ public class UserController {
         userRepo.deleteByUserName(authentication.getName());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
+    @GetMapping("/weather/{city}")
+    public ResponseEntity<?> getWeatherDetails(@PathVariable String city) {
+        Authentication authentication =  SecurityContextHolder.getContext().getAuthentication();
+        WeatherResponse weatherResponse = weatherService.getWeather(city);
+        String greeting = "";
+        if(weatherResponse != null){
+            greeting = " Weather feels like for: "+city +" is "+ weatherResponse.getCurrent().getTemperature();
+        }
+        return new ResponseEntity<>("Hi " + authentication.getName() + greeting, HttpStatus.OK);
+    }
 
 }
