@@ -4,6 +4,8 @@ import com.atharva.journalapp.api.response.WeatherResponse;
 import com.atharva.journalapp.entity.JournalEntry;
 import com.atharva.journalapp.entity.User;
 import com.atharva.journalapp.repository.UserRepo;
+import com.atharva.journalapp.repository.UserRepoImpl;
+import com.atharva.journalapp.service.EmailService;
 import com.atharva.journalapp.service.JournalEntryService;
 import com.atharva.journalapp.service.UserService;
 import com.atharva.journalapp.service.WeatherService;
@@ -31,6 +33,12 @@ public class UserController {
 
     @Autowired
     private JournalEntryService journalEntryService;
+
+    @Autowired
+    private UserRepoImpl userRepoImpl;
+
+    @Autowired
+    private EmailService emailService;
 
 //    @GetMapping
 //    public List<User> getAllUsers() {
@@ -83,6 +91,17 @@ public class UserController {
             greeting = " Weather feels like for: "+city +" is "+ weatherResponse.getCurrent().getTemperature();
         }
         return new ResponseEntity<>("Hi " + authentication.getName() + greeting, HttpStatus.OK);
+    }
+    @GetMapping("/query/{userName}")
+    public ResponseEntity<?> queryUser(@PathVariable String userName) {
+        Authentication authentication =  SecurityContextHolder.getContext().getAuthentication();
+        List<User> userForSA = userRepoImpl.getUserForSA(userName);
+        return new ResponseEntity<>(userForSA, HttpStatus.OK);
+    }
+
+    @GetMapping("/send-email")
+    public void sendEmail(){
+        emailService.sendEmail("keshre.a@northeastern.edu","Testing SMTP java SpringBoot","Hi, this a a test !");
     }
 
 }
