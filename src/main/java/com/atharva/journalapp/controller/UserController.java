@@ -5,11 +5,13 @@ import com.atharva.journalapp.entity.JournalEntry;
 import com.atharva.journalapp.entity.User;
 import com.atharva.journalapp.repository.UserRepo;
 import com.atharva.journalapp.repository.UserRepoImpl;
+import com.atharva.journalapp.schedular.UserSchedular;
 import com.atharva.journalapp.service.EmailService;
 import com.atharva.journalapp.service.JournalEntryService;
 import com.atharva.journalapp.service.UserService;
 import com.atharva.journalapp.service.WeatherService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -38,7 +40,10 @@ public class UserController {
     private UserRepoImpl userRepoImpl;
 
     @Autowired
-    private EmailService emailService;
+    private UserSchedular userSchedular;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
 //    @GetMapping
 //    public List<User> getAllUsers() {
@@ -93,15 +98,18 @@ public class UserController {
         return new ResponseEntity<>("Hi " + authentication.getName() + greeting, HttpStatus.OK);
     }
     @GetMapping("/query/{userName}")
-    public ResponseEntity<?> queryUser(@PathVariable String userName) {
+    public ResponseEntity<?> queryUser() {
         Authentication authentication =  SecurityContextHolder.getContext().getAuthentication();
-        List<User> userForSA = userRepoImpl.getUserForSA(userName);
+        List<User> userForSA = userRepoImpl.getUserForSA();
         return new ResponseEntity<>(userForSA, HttpStatus.OK);
     }
 
     @GetMapping("/send-email")
     public void sendEmail(){
-        emailService.sendEmail("keshre.a@northeastern.edu","Testing SMTP java SpringBoot","Hi, this a a test !");
+        userSchedular.fetchUserAndSendSAEmail();
+//        redisTemplate.opsForValue().set("email","abc@gmail.com");
+//        Object name = redisTemplate.opsForValue().get("Weather_of_Mumbai");
+//        System.out.println(name.toString());
     }
 
 }

@@ -36,8 +36,16 @@ public class JournalEntryController {
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllJournalEntries() {
+        List<JournalEntry> je = journalEntryService.getAll();
+        if(!je.isEmpty() ){
+            return new ResponseEntity<>(je,HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
-    @PostMapping
+    @PostMapping()
     public ResponseEntity<JournalEntry> createEntry(@RequestBody JournalEntry myEntry) {
         try {
             Authentication authentication =  SecurityContextHolder.getContext().getAuthentication();

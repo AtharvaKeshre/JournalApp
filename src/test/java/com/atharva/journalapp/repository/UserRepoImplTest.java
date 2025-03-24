@@ -11,7 +11,7 @@ public class UserRepoImplTest {
     private UserRepoImpl userRepo;
 
     @Test
-    public void testSaveNewUser(String userName){
-        userRepo.getUserForSA(userName);
+    public void testSaveNewUser(){
+        userRepo.getUserForSA();
     }
 }

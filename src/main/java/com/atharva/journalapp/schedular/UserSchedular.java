@@ -3,17 +3,21 @@ package com.atharva.journalapp.schedular;
 import com.atharva.journalapp.cache.AppCache;
 import com.atharva.journalapp.entity.JournalEntry;
 import com.atharva.journalapp.entity.User;
+import com.atharva.journalapp.enums.Sentiment;
+import com.atharva.journalapp.model.SentimentData;
 import com.atharva.journalapp.repository.UserRepoImpl;
 import com.atharva.journalapp.service.EmailService;
-import com.atharva.journalapp.service.SentimentAnalysisService;
-import com.atharva.journalapp.service.UserService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -25,20 +29,44 @@ public class UserSchedular {
     private AppCache appCache;
 
     @Autowired
-    private SentimentAnalysisService sentimentAnalysisService;
+    private KafkaTemplate<String, SentimentData> kafkaTemplate;
+
 
     @Autowired
     private UserRepoImpl userRepoImpl;
 
-    @Scheduled(cron = "0 0 9 * * SUN")
+//    @Scheduled(cron = "0 0 9 * * SUN")
     public void fetchUserAndSendSAEmail(){
-        List<User> userForSA = userRepoImpl.getUserForSA("abc");
+        List<User> userForSA = userRepoImpl.getUserForSA();
         for(User user : userForSA){
             List<JournalEntry> journalEntry = user.getJournalEntry();
-            List<String> filteredEntries = journalEntry.stream().filter(x -> x.getDate().isAfter(LocalDateTime.now().minus(7, ChronoUnit.DAYS))).map(x -> x.getContent()).collect(Collectors.toList());
-            String entry = String.join(" ", filteredEntries);
-            String sentiment = sentimentAnalysisService.getSentiment(entry);
-            emailService.sendEmail(user.getEmail(),"Sentiment for the last 7 days", sentiment);
+            List<Sentiment> sentiments = journalEntry.stream().filter(x -> x.getDate().isAfter(LocalDateTime.now().minus(180, ChronoUnit.DAYS))).map(x -> x.getSentiment()).collect(Collectors.toList());
+
+            Map<Sentiment,Integer> sentimentCounts = new HashMap<>();
+            for(Sentiment sentiment : sentiments){
+                if(sentiment!=null)
+                    sentimentCounts.put(sentiment,sentimentCounts.getOrDefault(sentiment,0)+1);
+            }
+            Sentiment mostFrequentSentiment = null;
+            int maxCount = 0;
+            for(Map.Entry<Sentiment,Integer> entry : sentimentCounts.entrySet()){
+                if(entry.getValue()>maxCount){
+                    maxCount = entry.getValue();
+                    mostFrequentSentiment = entry.getKey();
+                }
+            }
+            if(mostFrequentSentiment!=null){
+                emailService.sendEmail(user.getEmail(),"Sentiment for the last 90 days", mostFrequentSentiment.toString());
+//                SentimentData sentimentData = SentimentData.builder().email(user.getEmail()).sentiment("Sentiment for last 90 days " + mostFrequentSentiment).build();
+//                try{
+//                    kafkaTemplate.send("weekly_sentiments", sentimentData.getEmail(), sentimentData);
+//                }
+//                catch(Exception e){
+//                    emailService.sendEmail(user.getEmail(),"Sentiment for the last 90 days", mostFrequentSentiment.toString());
+//                }
+
+//                emailService.sendEmail(user.getEmail(),"Sentiment for the last 7 days", mostFrequentSentiment.toString());
+            }
         }
 
     }
