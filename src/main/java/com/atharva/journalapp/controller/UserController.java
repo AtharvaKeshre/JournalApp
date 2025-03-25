@@ -1,15 +1,13 @@
 package com.atharva.journalapp.controller;
 
 import com.atharva.journalapp.api.response.WeatherResponse;
+import com.atharva.journalapp.entity.CheckList;
 import com.atharva.journalapp.entity.JournalEntry;
 import com.atharva.journalapp.entity.User;
 import com.atharva.journalapp.repository.UserRepo;
 import com.atharva.journalapp.repository.UserRepoImpl;
 import com.atharva.journalapp.schedular.UserSchedular;
-import com.atharva.journalapp.service.EmailService;
-import com.atharva.journalapp.service.JournalEntryService;
-import com.atharva.journalapp.service.UserService;
-import com.atharva.journalapp.service.WeatherService;
+import com.atharva.journalapp.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -45,7 +43,10 @@ public class UserController {
     @Autowired
     private RedisTemplate redisTemplate;
 
-//    @GetMapping
+    @Autowired
+    private CheckListService checkListService;
+
+//    @GetMapping("/getallusers")
 //    public List<User> getAllUsers() {
 //        return userService.getAll();
 //    }
@@ -66,7 +67,6 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
 
     }
-
 
 //    @DeleteMapping
 //    public ResponseEntity<?> deleteUserById() {

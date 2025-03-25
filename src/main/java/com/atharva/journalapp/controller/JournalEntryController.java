@@ -25,7 +25,7 @@ public class JournalEntryController {
     @Autowired
     private UserService userService;
 
-    @GetMapping
+    @GetMapping("/show-entries")
     public ResponseEntity<?> getAllJournalEntriesOfUser() {
         Authentication authentication =  SecurityContextHolder.getContext().getAuthentication();
         String userName = authentication.getName();
@@ -36,7 +36,7 @@ public class JournalEntryController {
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-    @GetMapping("/all")
+    @GetMapping("/allentries")
     public ResponseEntity<?> getAllJournalEntries() {
         List<JournalEntry> je = journalEntryService.getAll();
         if(!je.isEmpty() ){
@@ -45,7 +45,7 @@ public class JournalEntryController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PostMapping()
+    @PostMapping("/create-entry")
     public ResponseEntity<JournalEntry> createEntry(@RequestBody JournalEntry myEntry) {
         try {
             Authentication authentication =  SecurityContextHolder.getContext().getAuthentication();
